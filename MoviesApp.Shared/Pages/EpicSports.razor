@@ -1,0 +1,68 @@
+@page "/epic"
+@using MoviesApp.Shared.Services
+@using MoviesApp.Shared.Models
+@inject IEpicSportsService Epic
+
+<PageTitle>Epic Sports</PageTitle>
+
+<div class="container py-3">
+    <div class="d-flex justify-content-between mb-2">
+        <h4>Latest Matches</h4>
+        <button class="btn btn-primary" @onclick="Load">Refresh</button>
+    </div>
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="alert alert-danger">@_error</div>
+    }
+    <div class="row g-3">
+        @foreach (var m in _matches)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <img src="@m.HomeTeam.Image" alt="@m.HomeTeam.Name" width="40" height="40" class="me-2" />
+                            <strong class="me-2">@m.HomeTeam.Name</strong>
+                            <span class="text-muted">vs</span>
+                            <img src="@m.AwayTeam.Image" alt="@m.AwayTeam.Name" width="40" height="40" class="ms-2 me-2" />
+                            <strong>@m.AwayTeam.Name</strong>
+                        </div>
+                        @if (m.Links.Count > 0)
+                        {
+                            var first = m.Links[0];
+                            <a class="btn btn-success btn-sm me-2" href="/football-player?url=@Uri.EscapeDataString(first)">Open Player</a>
+                            <a class="btn btn-outline-secondary btn-sm" href="@first" target="_blank">Open Raw</a>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">No streams detected</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    List<Match> _matches = new();
+    string _error = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            _error = string.Empty;
+            _matches = (await Epic.GetLatestMatchesAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}
