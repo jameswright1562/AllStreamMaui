@@ -21,13 +21,14 @@ public static class ServiceBuilder
         });
         services.AddHttpClient<IEpicSportsService, EpicSportsService>(c =>
         {
-            c.BaseAddress = new Uri("https://epicsports.djsofficial.com/");
+            var BaseUrl = "https://live.totalsportek07.com/";
+            c.BaseAddress = new Uri(BaseUrl);
             c.Timeout = TimeSpan.FromSeconds(15);
             c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
             c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36");
             c.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.9");
             c.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Referer", "https://epicsports.djsofficial.com/");
+            c.DefaultRequestHeaders.TryAddWithoutValidation("Referer", BaseUrl);
         })
         .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
         {
