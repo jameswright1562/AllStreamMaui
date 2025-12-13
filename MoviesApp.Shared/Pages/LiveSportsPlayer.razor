@@ -1,0 +1,394 @@
+﻿@page "/livesports/player/{MatchId}"
+@using MoviesApp.Shared.Models.Livesports
+@using MoviesApp.Shared.Services
+@inject ILiveSportService LiveSportService
+
+<div class="ls-page">
+    <header class="ls-header">
+        <div>
+            <h1 class="ls-title">Live Sports</h1>
+            <p class="ls-subtitle">Pick a stream and press play.</p>
+        </div>
+
+        <div class="ls-pill">
+            <span class="ls-dot @(IsLive ? "live" : "offline")"></span>
+            <span>@(IsLive ? "LIVE" : "OFFLINE")</span>
+        </div>
+    </header>
+
+    <section class="ls-card">
+        <div class="ls-row">@LiveStreams.Count Streams available</div>
+        <div class="ls-row">
+            <label class="ls-label" for="streamSelect">Stream</label>
+
+            <div class="ls-selectWrap">
+                <select id="streamSelect"
+                        class="ls-select"
+                        @bind="SelectedStreamId"
+                        @bind:after="OnSelectedStreamChanged"
+                        disabled="@(IsLoading || LiveStreams.Count == 0)">
+                    @if (IsLoading)
+                    {
+                        <option>Loading streams…</option>
+                    }
+                    else if (LiveStreams.Count == 0)
+                    {
+                        <option>No streams available</option>
+                    }
+                    else
+                    {
+                        <option value="">Select a stream…</option>
+                        @foreach (var s in LiveStreams)
+                        {
+                            <option value="@GetStreamId(s)">@GetStreamLabel(s)</option>
+                        }
+                    }
+                </select>
+
+                <span class="ls-chevron">▾</span>
+            </div>
+
+            <button class="ls-btn"
+                    @onclick="PlaySelected"
+                    disabled="@IsLoading || SelectedStream is null">
+                Play
+            </button>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <div class="ls-alert">
+                <strong>Oops:</strong> @Error
+            </div>
+        }
+
+        <div class="ls-player">
+            @if (IsLoading)
+            {
+                <div class="ls-skeleton">
+                    <div class="ls-shimmer"></div>
+                    <div class="ls-skeletonText">Fetching match details…</div>
+                </div>
+            }
+            else if (SelectedStream is null)
+            {
+                <div class="ls-empty">
+                    <div class="ls-emptyIcon">🏟️</div>
+                    <div class="ls-emptyTitle">Choose a stream</div>
+                    <div class="ls-emptyText">Select one from the dropdown above to start watching.</div>
+                </div>
+            }
+            else if (string.IsNullOrWhiteSpace(SelectedStreamUrl))
+            {
+                <div class="ls-empty">
+                    <div class="ls-emptyTitle">Stream URL missing</div>
+                    <div class="ls-emptyText">This stream doesn’t contain a playable URL.</div>
+                </div>
+            }
+            else
+            {
+                <iframe class="ls-iframe"
+                        src="@SelectedStreamUrl"
+                        allow="autoplay; encrypted-media; fullscreen"
+                        allowfullscreen
+                        referrerpolicy="no-referrer">
+                </iframe>
+            }
+        </div>
+    </section>
+</div>
+
+<style>
+    .ls-page {
+        min-height: calc(100vh - 2rem);
+        padding: 1.25rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        color: black;
+    }
+
+    .ls-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .ls-title {
+        margin: 0;
+        font-size: 1.6rem;
+        letter-spacing: 0.2px;
+    }
+
+    .ls-subtitle {
+        margin: .25rem 0 0 0;
+        opacity: .75;
+        font-size: .95rem;
+    }
+
+    .ls-card {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.10);
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+        backdrop-filter: blur(10px);
+    }
+
+    .ls-row {
+        display: flex;
+        align-items: end;
+        gap: .75rem;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .ls-label {
+        font-size: .85rem;
+        opacity: .8;
+        margin-bottom: .35rem;
+        display: block;
+    }
+
+    .ls-selectWrap {
+        position: relative;
+        min-width: 280px;
+        flex: 1;
+    }
+
+    .ls-select {
+        width: 100%;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding: .7rem 2.25rem .7rem .85rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.35);
+        color: #fff;
+        outline: none;
+    }
+
+        .ls-select:focus {
+            border-color: rgba(255,255,255,0.30);
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.10);
+        }
+
+    .ls-chevron {
+        position: absolute;
+        right: .75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        opacity: .8;
+    }
+
+    .ls-btn {
+        padding: .72rem 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.18);
+        background: rgba(255,255,255,0.10);
+        color: black;
+        cursor: pointer;
+        transition: transform .08s ease, background .12s ease, border-color .12s ease;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+        .ls-btn:hover {
+            background: rgba(255,255,255,0.14);
+            border-color: rgba(255,255,255,0.26);
+        }
+
+        .ls-btn:active {
+            transform: translateY(1px);
+        }
+
+        .ls-btn:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+    .ls-player {
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(0,0,0,0.40);
+        aspect-ratio: 16 / 9;
+        min-height: 320px;
+        position: relative;
+    }
+
+    .ls-iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        display: block;
+    }
+
+    .ls-empty {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        gap: .35rem;
+    }
+
+    .ls-emptyIcon {
+        font-size: 2rem;
+        opacity: .9;
+        margin-bottom: .25rem;
+    }
+
+    .ls-emptyTitle {
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+
+    .ls-emptyText {
+        opacity: .75;
+        max-width: 520px;
+        line-height: 1.35;
+    }
+
+    .ls-alert {
+        margin: .75rem 0 1rem 0;
+        padding: .75rem .9rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,90,90,0.35);
+        background: rgba(255,90,90,0.10);
+    }
+
+    .ls-pill {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        padding: .45rem .7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.25);
+        font-weight: 700;
+        letter-spacing: .6px;
+        font-size: .8rem;
+    }
+
+    .ls-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        display: inline-block;
+        box-shadow: 0 0 0 3px rgba(255,255,255,0.06);
+    }
+
+        .ls-dot.live {
+            background: #3cff7a;
+            box-shadow: 0 0 0 3px rgba(60,255,122,0.18);
+        }
+
+        .ls-dot.offline {
+            background: #ff4a4a;
+            box-shadow: 0 0 0 3px rgba(255,74,74,0.18);
+        }
+
+    /* Loading skeleton */
+    .ls-skeleton {
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    .ls-shimmer {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.10) 50%, rgba(255,255,255,0.02) 100%);
+        transform: translateX(-100%);
+        animation: shimmer 1.2s infinite;
+    }
+
+    .ls-skeletonText {
+        position: relative;
+        opacity: .75;
+        font-weight: 600;
+    }
+</style>
+
+@code {
+    [Parameter] public string MatchId { get; set; } = default!;
+
+    private bool IsLoading { get; set; }
+    private string? Error { get; set; }
+
+    private LiveStream? SelectedStream { get; set; }
+    private List<LiveStream> LiveStreams { get; set; } = new();
+
+    private string? SelectedStreamId { get; set; }
+    private string? SelectedStreamUrl { get; set; }
+
+    // If you have real start/end times, wire these up.
+    private bool IsLive => true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            IsLoading = true;
+            Error = null;
+            SelectedStream = null;
+            SelectedStreamId = null;
+            SelectedStreamUrl = null;
+
+            var streams = await LiveSportService.GetMatchDetailAsync(MatchId);
+            LiveStreams = streams.Sources?.ToList() ?? new List<LiveStream>();
+
+            // auto-select first stream
+            if (LiveStreams.Count > 0)
+            {
+                SelectedStream = LiveStreams[0];
+                SelectedStreamId = GetStreamId(SelectedStream);
+                SelectedStreamUrl = GetStreamUrl(SelectedStream);
+            }
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+            LiveStreams = new();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private Task OnSelectedStreamChanged()
+    {
+        SelectedStream = LiveStreams.FirstOrDefault(s => GetStreamId(s) == SelectedStreamId);
+        SelectedStreamUrl = SelectedStream is null ? null : GetStreamUrl(SelectedStream);
+        return Task.CompletedTask;
+    }
+
+    private void PlaySelected()
+    {
+        SelectedStreamUrl = SelectedStream is null ? null : GetStreamUrl(SelectedStream);
+    }
+
+    // ---- Helpers ----
+    private static string GetStreamId(LiveStream s)
+        => s.Id;
+
+    private static string GetStreamLabel(LiveStream s)
+        => $"Viewers: {s.Viewers}: {s.Language} - IsHd: {s.Hd} - Source: {s.Source}";
+
+    private static string? GetStreamUrl(LiveStream s)
+    {
+        return s.EmbedUrl;
+    }
+}

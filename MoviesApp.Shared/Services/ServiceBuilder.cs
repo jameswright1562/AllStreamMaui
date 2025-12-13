@@ -19,21 +19,12 @@ public static class ServiceBuilder
             }
             c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
-        services.AddHttpClient<IEpicSportsService, EpicSportsService>(c =>
+        services.AddHttpClient<ILiveSportService, LiveSportService>(c =>
         {
-            var BaseUrl = "https://live.totalsportek07.com/";
-            c.BaseAddress = new Uri(BaseUrl);
+            c.BaseAddress = new Uri("https://livesport.su/api/");
             c.Timeout = TimeSpan.FromSeconds(15);
-            c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
-            c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.9");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Referer", BaseUrl);
-        })
-        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate,
-            AllowAutoRedirect = true,
+            c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
         });
         return services;
     }
@@ -50,20 +41,12 @@ public static class ServiceBuilder
             }
             c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
-        services.AddHttpClient<IEpicSportsService, EpicSportsService>(c =>
+        services.AddHttpClient<ILiveSportService, LiveSportService>(c =>
         {
-            c.BaseAddress = new Uri("https://epicsports.djsofficial.com/");
+            c.BaseAddress = new Uri("https://livesport.su/api/");
             c.Timeout = TimeSpan.FromSeconds(15);
-            c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
-            c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "en-US,en;q=0.9");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Connection", "keep-alive");
-            c.DefaultRequestHeaders.TryAddWithoutValidation("Referer", "https://epicsports.djsofficial.com/");
-        })
-        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-        {
-            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate,
-            AllowAutoRedirect = true,
+            c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
         });
         return services;
     }

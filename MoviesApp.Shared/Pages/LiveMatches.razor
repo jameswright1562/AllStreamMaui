@@ -1,0 +1,246 @@
+﻿@page "/livesports"
+@using MoviesApp.Shared.Services
+@using MoviesApp.Shared.Models
+@using MoviesApp.Shared.Models.Livesports
+@inject ILiveSportService LiveSport
+@inject NavigationManager Nav
+
+<PageTitle>Live Matches</PageTitle>
+
+<div class="ls-container">
+    <header class="ls-header">
+        <h1>Live Sports</h1>
+
+        <div class="ls-controls">
+            <select @bind="SortMode" class="ls-select">
+                <option value="LiveFirst">Live first</option>
+                <option value="DateAsc">Date ↑</option>
+                <option value="DateDesc">Date ↓</option>
+            </select>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="ls-error">@_error</div>
+    }
+
+    @foreach (var sport in _matches)
+    {
+        <section class="ls-sport">
+            <h2 class="ls-sport-title">@sport.Key.Name</h2>
+
+            <div class="ls-grid">
+                @foreach (var match in ApplySort(sport.Value))
+                {
+                    <div class="ls-card @(match.IsLive ? "live" : "")">
+                        <div class="ls-card-header">
+                            <span class="ls-title">@match.Title</span>
+
+                            @if (match.IsLive)
+                            {
+                                <span class="ls-live-pill">LIVE</span>
+                            }
+                        </div>
+
+                        <div class="ls-teams">
+                            <div class="ls-team">
+                                <img src="@match.Teams?.Home?.Badge" />
+                                <span>@match.Teams?.Home?.Name</span>
+                            </div>
+
+                            <span class="ls-vs">VS</span>
+
+                            <div class="ls-team">
+                                <img src="@match.Teams?.Away?.Badge" />
+                                <span>@match.Teams?.Away?.Name</span>
+                            </div>
+                        </div>
+
+                        <div class="ls-meta">
+                            <span>@match.MatchDate.ToString("dd MMM yyyy HH:mm")</span>
+                        </div>
+                        <button class="ls-play"
+                                @onclick="@(() => Nav.NavigateTo($"/livesports/player/{match.Id}"))">
+                            Watch
+                        </button>
+
+
+                    </div>
+                }
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    List<Sport> _sports = new();
+    Dictionary<Sport, IEnumerable<LiveMatch>> _matches = new();
+    string _error = string.Empty;
+
+    string SortMode { get; set; } = "LiveFirst";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            var ct = CancellationToken.None;
+
+            _sports = (await LiveSport.GetSportsAsync(ct))
+                .Where(s => s.Name == "Football")
+                .ToList();
+
+            foreach (var sport in _sports)
+            {
+                _matches[sport] = await LiveSport
+                    .GetMatchesAsync(sport.Id, ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    IEnumerable<LiveMatch> ApplySort(IEnumerable<LiveMatch> matches)
+    {
+        return SortMode switch
+        {
+            "LiveFirst" => matches
+                .OrderByDescending(m => m.IsLive)
+                .ThenBy(m => m.MatchDate),
+
+            "DateAsc" => matches.OrderBy(m => m.MatchDate),
+
+            "DateDesc" => matches.OrderByDescending(m => m.MatchDate),
+
+            _ => matches
+        };
+    }
+}
+
+
+<style>
+    .ls-container {
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: auto;
+    }
+
+    .ls-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    }
+
+    .ls-controls {
+    display: flex;
+    gap: .75rem;
+    }
+
+    .ls-select {
+    padding: .5rem .75rem;
+    border-radius: 8px;
+    background: #1e1e1e;
+    color: #fff;
+    border: 1px solid #333;
+    }
+
+    .ls-error {
+    background: #ff4d4d22;
+    border: 1px solid #ff4d4d;
+    padding: .75rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    }
+
+    .ls-sport {
+    margin-bottom: 2rem;
+    }
+
+    .ls-sport-title {
+    margin-bottom: .75rem;
+    }
+
+    .ls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+    }
+
+    .ls-card {
+    background: #141414;
+    border-radius: 14px;
+    padding: 1rem;
+    border: 1px solid #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    color: white;
+    }
+
+    .ls-card.live {
+    border-color: #3cff7a;
+    box-shadow: 0 0 0 1px #3cff7a44;
+    }
+
+    .ls-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    }
+
+    .ls-title {
+    font-weight: 600;
+    }
+
+    .ls-live-pill {
+    background: #3cff7a;
+    color: #000;
+    font-weight: 800;
+    font-size: .7rem;
+    padding: .25rem .5rem;
+    border-radius: 999px;
+    }
+
+    .ls-teams {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    }
+
+    .ls-team {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    }
+
+    .ls-team img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    }
+
+    .ls-vs {
+    font-weight: 700;
+    opacity: .6;
+    }
+
+    .ls-meta {
+    font-size: .85rem;
+    opacity: .75;
+    }
+
+    .ls-play {
+    margin-top: auto;
+    padding: .6rem;
+    border-radius: 10px;
+    border: none;
+    background: #512bd4;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    }
+
+    </style>

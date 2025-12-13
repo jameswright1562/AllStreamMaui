@@ -106,6 +106,7 @@ public class ImdbApiDevMovieService : IMovieService
         try
         {
             var url = $"tv/{tmdbId}/season/{seasonNumber}";
+            var x = await _http.GetStringAsync(url, ct);
             var payload = await _http.GetFromJsonAsync<TmdbTvSeasonResponse>(url, ct);
             var episodes = new List<TvEpisode>();
             if (payload?.Episodes != null)
@@ -118,7 +119,7 @@ public class ImdbApiDevMovieService : IMovieService
                         EpisodeNumber = e.EpisodeNumber,
                         Name = e.Name ?? string.Empty,
                         StillUrl = still,
-                        Runtime = e.Runtime
+                        Runtime = e.Runtime ?? 0
                     });
                 }
             }
@@ -495,7 +496,7 @@ public class ImdbApiDevMovieService : IMovieService
 
     private class TmdbTvSeasonResponse
     {
-        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("id")] public int? Id { get; set; }
         [JsonPropertyName("name")] public string? Name { get; set; }
         [JsonPropertyName("episodes")] public List<TmdbEpisode>? Episodes { get; set; }
     }
@@ -505,7 +506,7 @@ public class ImdbApiDevMovieService : IMovieService
         [JsonPropertyName("episode_number")] public int EpisodeNumber { get; set; }
         [JsonPropertyName("name")] public string? Name { get; set; }
         [JsonPropertyName("still_path")] public string? StillPath { get; set; }
-        [JsonPropertyName("runtime")] public int Runtime { get; set; }
+        [JsonPropertyName("runtime")] public int? Runtime { get; set; }
     }
 
     private class TmdbTvResult
