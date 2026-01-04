@@ -152,6 +152,7 @@ public class ImdbApiDevMovieService : IMovieService
                             Name = e.Name ?? string.Empty,
                             StillUrl = still,
                             Runtime = e.Runtime ?? 0,
+                            AirDate = e.AirDate ?? DateTime.Now.Date
                         }
                     );
                 }
@@ -767,6 +768,8 @@ public class ImdbApiDevMovieService : IMovieService
 
         [JsonPropertyName("runtime")]
         public int? Runtime { get; set; }
+        [JsonPropertyName("air_date")]
+        public DateTime? AirDate { get; set; }
     }
 
     private class TmdbTvResult

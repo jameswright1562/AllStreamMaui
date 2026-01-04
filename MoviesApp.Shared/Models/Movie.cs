@@ -39,6 +39,7 @@ public class TvEpisode
     public string Name { get; set; } = string.Empty;
     public string StillUrl { get; set; } = string.Empty;
     public int Runtime { get; set; }
+    public DateTime AirDate { get; set; }
 }
 
 public class MovieSearchOptions

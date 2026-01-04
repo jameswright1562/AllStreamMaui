@@ -54,7 +54,7 @@
                                         <div class="card-body d-flex flex-column text-secondary">
                                             <strong class="text-secondary">Episode @e.EpisodeNumber</strong>
                                             <span class="text-secondary">@e.Name</span>
-                                            <button class="btn btn-success btn-sm mt-auto" @onclick="() => Play(e.EpisodeNumber)">Play</button>
+                                            <button class="btn btn-success btn-sm mt-auto" @onclick="() => Play(e.EpisodeNumber)" disabled="@(e.AirDate > DateTime.Now)">Play</button>
                                         </div>
                                     </div>
                                 </div>
