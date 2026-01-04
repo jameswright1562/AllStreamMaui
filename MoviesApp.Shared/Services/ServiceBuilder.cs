@@ -19,31 +19,9 @@ public static class ServiceBuilder
             }
             c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         });
-        services.AddHttpClient<ILiveSportService, LiveSportService>(c =>
+        services.AddHttpClient<CDNLiveService>(c =>
         {
-            c.BaseAddress = new Uri("https://livesport.su/api/");
-            c.Timeout = TimeSpan.FromSeconds(15);
-            c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-        });
-        return services;
-    }
-
-    public static IServiceCollection AddSharedServices(this IServiceCollection services, Func<IServiceProvider, IFormFactor> formFactorFactory, string? tmdbApiKey)
-    {
-        services.AddSingleton<IFormFactor>(formFactorFactory);
-        services.AddHttpClient<IMovieService, ImdbApiDevMovieService>(c =>
-        {
-            c.BaseAddress = new Uri("https://api.themoviedb.org/3/");
-            if (!string.IsNullOrWhiteSpace(tmdbApiKey))
-            {
-                c.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tmdbApiKey);
-            }
-            c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        });
-        services.AddHttpClient<ILiveSportService, LiveSportService>(c =>
-        {
-            c.BaseAddress = new Uri("https://livesport.su/api/");
+            c.BaseAddress = new Uri("https://api.cdn-live.tv/api/v1/");
             c.Timeout = TimeSpan.FromSeconds(15);
             c.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             c.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");

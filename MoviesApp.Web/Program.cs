@@ -2,7 +2,6 @@ using MoviesApp.Web.Components;
 using MoviesApp.Shared.Services;
 using MoviesApp.Web.Services;
 using MoviesApp.Shared.Models;
-using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -13,7 +12,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add device-specific services used by the MoviesApp.Shared project
-MoviesApp.Shared.Services.ServiceBuilder.AddSharedServices(builder.Services, sp => new FormFactor(), settings.TmdbApiKey);
+ServiceBuilder.AddSharedServices(builder.Services, sp => new FormFactor(), settings);
 
 var app = builder.Build();
 
@@ -21,7 +20,6 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
