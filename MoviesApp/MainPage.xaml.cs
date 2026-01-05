@@ -22,6 +22,12 @@ public partial class MainPage : ContentPage
             var settings = wv.Settings;
             settings.JavaScriptCanOpenWindowsAutomatically = false;
             settings.SetSupportMultipleWindows(false);
+            settings.JavaScriptEnabled = true;
+            settings.DomStorageEnabled = true;
+            settings.DatabaseEnabled = true;
+            settings.MediaPlaybackRequiresUserGesture = false;
+            settings.MixedContentMode = global::Android.Webkit.MixedContentHandling.AlwaysAllow;
+            global::Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
             wv.SetWebChromeClient(new SafeWebChromeClient());
         }
     }

@@ -29,19 +29,19 @@ public static class MauiProgram
             {
                 BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping(
                     "Adblock",
-                    (handler, view) => {
+                    (handler, view) =>
+                    {
 #if ANDROID
-                        var webView = handler.PlatformView; // Android.Webkit.WebView
+                        //var webView = handler.PlatformView; // Android.Webkit.WebView
 
-                        // Keep navigation under control
-                        webView.SetWebViewClient(new SafeWebViewClient());
-
-                        // Block "window.open" / popups
-                        webView.SetWebChromeClient(new SafeWebChromeClient());
-
-                        // Good defaults
-                        webView.Settings.JavaScriptCanOpenWindowsAutomatically = false;
-                        webView.Settings.SetSupportMultipleWindows(false);
+                        //webView.SetWebViewClient(new SafeWebViewClient());
+                        //webView.SetWebChromeClient(new SafeWebChromeClient());
+                        //webView.Settings.JavaScriptEnabled = true;
+                        //webView.Settings.DomStorageEnabled = true;
+                        //webView.Settings.DatabaseEnabled = true;
+                        //webView.Settings.MediaPlaybackRequiresUserGesture = false;
+                        //webView.Settings.MixedContentMode =
+                        //    Android.Webkit.MixedContentHandling.AlwaysAllow;
 #endif
 
 #if WINDOWS
@@ -86,35 +86,36 @@ public static class MauiProgram
 #if ANDROID
 internal sealed class SafeWebViewClient : WebViewClient
 {
-    static readonly HashSet<string> AllowedHosts = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "0.0.0.0",
-        "localhost",
-        "appassets.androidplatform.net",
-    };
-
     public override bool ShouldOverrideUrlLoading(
         Android.Webkit.WebView view,
-        IWebResourceRequest request
-    )
+        IWebResourceRequest request)
     {
         var url = request?.Url;
         if (url == null)
             return false;
 
-        var host = url.Host ?? "";
-        var scheme = url.Scheme ?? "";
+        var scheme = url.Scheme?.ToLowerInvariant();
+        var host = url.Host?.ToLowerInvariant();
 
-        var isInternal =
-            AllowedHosts.Contains(host)
-            || scheme.Equals("about", StringComparison.OrdinalIgnoreCase)
-            || scheme.Equals("file", StringComparison.OrdinalIgnoreCase);
-
-        if (isInternal)
+        // Allow ALL internal Blazor + WebView traffic
+        if (scheme == "file" ||
+            scheme == "about" ||
+            scheme == "data" ||
+            scheme == "blob" ||
+            host == "localhost" ||
+            host == "appassets.androidplatform.net")
+        {
             return false;
+        }
 
-        _ = Launcher.Default.OpenAsync(url.ToString());
-        return true;
+        // Only intercept real external links
+        if (scheme == "http" || scheme == "https")
+        {
+            _ = Launcher.Default.OpenAsync(url.ToString());
+            return true;
+        }
+
+        return false;
     }
 }
 
@@ -124,10 +125,10 @@ internal sealed class SafeWebChromeClient : WebChromeClient
         Android.Webkit.WebView view,
         bool isDialog,
         bool isUserGesture,
-        Android.OS.Message resultMsg
-    )
+        Android.OS.Message resultMsg)
     {
-        return false;
+        // Let WebView decide – Blazor needs this
+        return base.OnCreateWindow(view, isDialog, isUserGesture, resultMsg);
     }
 }
 #endif

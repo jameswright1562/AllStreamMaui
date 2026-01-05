@@ -1,4 +1,4 @@
-﻿namespace MoviesApp.Shared.Services;
+namespace MoviesApp.Shared.Services;
 
 #if ANDROID
 using Android.Webkit;
@@ -10,6 +10,7 @@ public sealed class SafeWebViewClient : WebViewClient
     private static readonly HashSet<string> AllowedHosts = new(StringComparer.OrdinalIgnoreCase)
     {
         "0.0.0.0",
+        "0.0.0.1",
         "localhost",
         "appassets.androidplatform.net",
     };
