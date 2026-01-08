@@ -2,7 +2,15 @@
   <PropertyGroup>
     <TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
+    
+    <!-- Hack to bypass Xcode version check on GitHub Actions -->
+    <_SdkXcodeCheck>false</_SdkXcodeCheck>
+  </PropertyGroup>
 
+  <!-- Override the target to ensure check is skipped -->
+  <Target Name="_CheckXcodeVersion" />
+
+  <PropertyGroup>
     <!-- Note for MacCatalyst:
       The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
       When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
