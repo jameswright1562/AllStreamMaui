@@ -8,19 +8,19 @@
 
 @if (SelectedEvent == null)
 {
-    <div class="ls-container">
-        <header class="ls-header">
-            <h1>Live Sports</h1>
+    <div class="container mx-auto px-4 py-8 max-w-[1400px]">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-3xl font-bold">Live Sports</h1>
 
-            <div class="ls-controls">
-                <select @bind="FilterSport" class="ls-select">
+            <div class="flex flex-wrap gap-3">
+                <select @bind="FilterSport" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All sports</option>
                     @foreach (var s in Sports.Keys.OrderBy(x => x.ToString()))
                     {
                         <option value="@s.ToString()">@s</option>
                     }
                 </select>
-                <select @bind="FilterCountry" class="ls-select">
+                <select @bind="FilterCountry" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All countries</option>
                     @foreach (var c in Countries)
                     {
@@ -28,7 +28,7 @@
                     }
                 </select>
 
-                <select @bind="FilterTournament" class="ls-select">
+                <select @bind="FilterTournament" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">All tournaments</option>
                     @foreach (var t in Tournaments)
                     {
@@ -36,66 +36,66 @@
                     }
                 </select>
 
-                <select @bind="StatusFilter" class="ls-select">
+                <select @bind="StatusFilter" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="All">All statuses</option>
                     <option value="Live">Live</option>
                     <option value="Upcoming">Upcoming</option>
                     <option value="Finished">Finished</option>
                 </select>
 
-                <select @bind="SortMode" class="ls-select">
+                <select @bind="SortMode" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="LiveFirst">Live first</option>
                     <option value="DateAsc">Date ↑</option>
                     <option value="DateDesc">Date ↓</option>
                 </select>
-                <button class="ls-select" @onclick="ResetFilters">Reset</button>
+                <button class="px-3 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-md text-white transition-colors" @onclick="ResetFilters">Reset</button>
             </div>
         </header>
 
         @if (!string.IsNullOrWhiteSpace(_error))
         {
-            <div class="ls-error">@_error</div>
+            <div class="bg-red-900/20 border border-red-500/50 p-3 rounded-lg mb-4 text-red-200">@_error</div>
         }
         @foreach (var sportGroup in GetSportGroups())
         {
-            <section class="ls-sport">
-                <h2 class="ls-sport-title">@sportGroup.Key</h2>
+            <section class="mb-8 flex flex-col gap-6">
+                <h2 class="text-2xl font-bold mb-3">@sportGroup.Key</h2>
                 @if (!ApplyFilters(sportGroup.Value).GroupBy(m => m.Country).OrderBy(g => g.Key).Any())
                 {
-                    <div class="ls-no-matches">No matches available</div>
+                    <div class="text-gray-400 italic">No matches available</div>
                 }
                 @foreach (var country in ApplyFilters(sportGroup.Value).GroupBy(m => m.Country).OrderBy(g => g.Key))
                 {
-                    <h3 class="ls-group-title">@country.Key                 <img src="@country.First().CountryIMG"/>
+                    <h3 class="text-xl font-semibold flex items-center gap-2 mt-4 mb-2">@country.Key                 <img src="@country.First().CountryIMG" class="h-6 w-auto"/>
                     </h3>
                     @foreach (var tournament in country.GroupBy(m => m.Tournament).OrderBy(g => g.Key))
                     {
-                        <h4 class="ls-subgroup-title">@tournament.Key</h4>
-                        <div class="ls-grid">
+                        <h4 class="text-lg font-medium text-gray-400 mb-2">@tournament.Key</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             @foreach (var match in ApplySort(tournament))
                             {
-                                <div class="ls-card @(match.Status == GameStatus.Live ? "live" : "")">
-                                    <div class="ls-card-header">
+                                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 flex flex-col gap-3 text-white shadow-sm hover:bg-gray-750 transition-colors @(match.Status == GameStatus.Live ? "border-green-500 ring-1 ring-green-500/30" : "")">
+                                    <div class="flex justify-between items-center h-6">
                                         @if (match.Status == GameStatus.Live)
                                         {
-                                            <span class="ls-live-pill">LIVE</span>
+                                            <span class="bg-green-500 text-black font-bold text-xs px-2 py-1 rounded-full">LIVE</span>
                                         }
                                     </div>
-                                    <div class="ls-teams">
-                                        <div class="ls-team">
-                                            <img src="@match.HomeTeamIMG" />
-                                            <span>@match.HomeTeam</span>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2 flex-1 min-w-0 justify-end text-right">
+                                            <span class="whitespace-nowrap overflow-hidden text-ellipsis">@match.HomeTeam</span>
+                                            <img src="@match.HomeTeamIMG" class="w-9 h-9 object-contain flex-shrink-0" />
                                         </div>
-                                        <span class="ls-vs">VS</span>
-                                        <div class="ls-team">
-                                            <img src="@match.AwayTeamIMG" />
-                                            <span>@match.AwayTeam</span>
+                                        <span class="font-bold opacity-60 mx-4">VS</span>
+                                        <div class="flex items-center gap-2 flex-1 min-w-0 justify-start text-left">
+                                            <img src="@match.AwayTeamIMG" class="w-9 h-9 object-contain flex-shrink-0" />
+                                            <span class="whitespace-nowrap overflow-hidden text-ellipsis">@match.AwayTeam</span>
                                         </div>
                                     </div>
-                                    <div class="ls-meta">
+                                    <div class="text-sm text-gray-400">
                                         <span>@match.Start</span>
                                     </div>
-                                    <button disabled="@match.NoChannel" class="ls-play" @onclick="@(() => { SelectedEvent = match; })">Watch</button>
+                                    <button disabled="@match.NoChannel" class="mt-auto w-full py-2 rounded-md border-none bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" @onclick="@(() => { SelectedEvent = match; })">Watch</button>
                                 </div>
                             }
                         </div>
@@ -267,153 +267,3 @@ else
         public string StatusFilter { get; set; }
     }
 }
-
-
-<style>
-    .ls-container {
-    padding: 1.5rem;
-    max-width: 1400px;
-    margin: auto;
-    }
-
-    .ls-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    }
-
-    .ls-controls {
-    display: flex;
-    gap: .75rem;
-    }
-
-    .ls-select {
-    padding: .5rem .75rem;
-    border-radius: 8px;
-    background: #1e1e1e;
-    color: #fff;
-    border: 1px solid #333;
-    }
-
-    .ls-error {
-    background: #ff4d4d22;
-    border: 1px solid #ff4d4d;
-    padding: .75rem;
-    border-radius: 10px;
-    margin-bottom: 1rem;
-    }
-
-    .ls-sport {
-    margin-bottom: 2rem;
-        gap: 1.5rem;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .ls-sport-title {
-    margin-bottom: .75rem;
-    }
-
-    .ls-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1rem;
-    }
-
-    .ls-card {
-    background: #141414;
-    border-radius: 14px;
-    padding: 1rem;
-    border: 1px solid #2a2a2a;
-    display: flex;
-    flex-direction: column;
-    gap: .75rem;
-    color: white;
-    }
-
-    .ls-card.live {
-    border-color: #3cff7a;
-    box-shadow: 0 0 0 1px #3cff7a44;
-    }
-
-    .ls-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    }
-
-    .ls-title {
-    font-weight: 600;
-    }
-
-    .ls-live-pill {
-    background: #3cff7a;
-    color: #000;
-    font-weight: 800;
-    font-size: .7rem;
-    padding: .25rem .5rem;
-    border-radius: 999px;
-    }
-
-    .ls-teams {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    }
-
-    .ls-team {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    flex: 1;
-    min-width: 0;
-    justify-content: center; /* Center content when not overflowing, or remove if left alignment is preferred */
-    }
-
-    .ls-team:first-child {
-        justify-content: flex-end;
-        text-align: right;
-    }
-    
-    .ls-team:last-child {
-        justify-content: flex-start;
-        text-align: left;
-    }
-
-    .ls-team span {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .ls-team img {
-    width: 36px;
-    height: 36px;
-    object-fit: contain;
-    flex-shrink: 0;
-    }
-
-    .ls-vs {
-    font-weight: 700;
-    opacity: .6;
-    margin: 0 1rem;
-    }
-
-    .ls-meta {
-    font-size: .85rem;
-    opacity: .75;
-    }
-
-    .ls-play {
-    margin-top: auto;
-    padding: .6rem;
-    border-radius: 10px;
-    border: none;
-    background: #512bd4;
-    color: white;
-    font-weight: 600;
-    cursor: pointer;
-    }
-
-    </style>

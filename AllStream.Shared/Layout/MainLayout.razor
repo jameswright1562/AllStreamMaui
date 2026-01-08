@@ -1,10 +1,11 @@
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
 
-<NavMenu />
 
-<main class="app-main">
-    <article class="content container">
+<main class="min-h-screen flex flex-col relative">
+    <NavMenu />
+
+    <article class="flex-1 container mx-auto px-4 max-w-6xl py-5">
         @Body
     </article>
     <div id="blazor-error-ui" data-nosnippet>

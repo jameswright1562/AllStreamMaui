@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
+using AndroidX.Core.View;
 
 namespace AllStream;
 
@@ -14,4 +15,13 @@ namespace AllStream;
         | ConfigChanges.SmallestScreenSize
         | ConfigChanges.Density
 )]
-public class MainActivity : MauiAppCompatActivity { }
+public class MainActivity : MauiAppCompatActivity
+{
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+
+        // 🔥 THIS is the important line
+        WindowCompat.SetDecorFitsSystemWindows(Window, true);
+    }
+}

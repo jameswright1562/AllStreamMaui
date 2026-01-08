@@ -36,6 +36,12 @@ public static class MauiProgram
             })
             .ConfigureMauiHandlers(_ =>
             {
+#if ANDROID
+                Microsoft.Maui.Handlers.PageHandler.Mapper.AppendToMapping("SafeArea", (handler, view) =>
+                {
+                    handler.PlatformView.SetFitsSystemWindows(true);
+                });
+#endif
                 BlazorWebViewHandler.BlazorWebViewMapper.AppendToMapping(
                     "Adblock",
                     (handler, view) =>

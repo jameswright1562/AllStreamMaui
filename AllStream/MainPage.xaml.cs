@@ -13,6 +13,8 @@ public partial class MainPage : ContentPage
         InitializeComponent();
 #if ANDROID
         Loaded += OnLoaded;
+        Padding = new Thickness(0, GetStatusBarHeightDp(), 0, 0);
+
 #endif
     }
 
@@ -33,6 +35,17 @@ public partial class MainPage : ContentPage
             global::Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true);
             wv.SetWebChromeClient(new SafeWebChromeClient());
         }
+    }
+
+    static double GetStatusBarHeightDp()
+    {
+        var res = Android.App.Application.Context.Resources;
+        var id = res.GetIdentifier("status_bar_height", "dimen", "android");
+
+        var px = id > 0 ? res.GetDimensionPixelSize(id) : 0;
+        var density = res.DisplayMetrics.Density;
+
+        return density > 0 ? px / density : 0;
     }
 #endif
 }

@@ -5,74 +5,70 @@
 
 <PageTitle>TV Series</PageTitle>
 
-<div class="container py-3">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="row g-2">
-                <div class="col-12 col-md-6">
-                    <input class="form-control" @bind="_opts.Query" placeholder="Search TV series" @bind:event="oninput" />
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-sm mb-6">
+        <div class="p-4">
+            <div class="grid grid-cols-12 gap-3">
+                <div class="col-span-12 md:col-span-6">
+                    <input class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500" @bind="_opts.Query" placeholder="Search TV series" @bind:event="oninput" />
                 </div>
-                <div class="col-6 col-md-2">
-                    <input class="form-control" type="number" min="1" @bind="_opts.Page" placeholder="Page" />
+                <div class="col-span-6 md:col-span-2">
+                    <input class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500" type="number" min="1" @bind="_opts.Page" placeholder="Page" />
                 </div>
-                <div class="col-6 col-md-2">
-                    <input class="form-control" type="text" @bind="_opts.Region" placeholder="Region" />
+                <div class="col-span-6 md:col-span-2">
+                    <input class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500" type="text" @bind="_opts.Region" placeholder="Region" />
                 </div>
-                <div class="col-6 col-md-2">
-                    <input class="form-control" type="number" min="1" @bind="_season" placeholder="Season" />
+                <div class="col-span-6 md:col-span-2">
+                    <input class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500" type="number" min="1" @bind="_season" placeholder="Season" />
                 </div>
-                <div class="col-6 col-md-2">
-                    <input class="form-control" type="number" min="1" @bind="_episode" placeholder="Episode" />
+                <div class="col-span-6 md:col-span-2">
+                    <input class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500" type="number" min="1" @bind="_episode" placeholder="Episode" />
                 </div>
-                <div class="col-12 col-md-3">
-                    <select class="form-select" @bind="_opts.Language">
+                <div class="col-span-12 md:col-span-3">
+                    <select class="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500" @bind="_opts.Language">
                         <option value="en-US">English (US)</option>
                         <option value="en-GB">English (UK)</option>
                         <option value="fr-FR">French</option>
                         <option value="es-ES">Spanish</option>
                     </select>
                 </div>
-                <div class="col-12 col-md-3">
-                    <button class="btn btn-primary w-100" @onclick="Search">Search</button>
+                <div class="col-span-12 md:col-span-3">
+                    <button class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium" @onclick="Search">Search</button>
                 </div>
-                <div class="col-12 col-md-3">
-                    <button class="btn btn-outline-secondary w-100" @onclick="Clear">Clear</button>
+                <div class="col-span-12 md:col-span-3">
+                    <button class="w-full px-4 py-2 border border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors" @onclick="Clear">Clear</button>
                 </div>
             </div>
-            <div class="text-danger mt-2">@_error</div>
-            <div class="mt-2 text-secondary">@(_results.Count) results</div>
+            <div class="text-red-500 mt-2">@_error</div>
+            <div class="mt-2 text-gray-400">@(_results.Count) results</div>
         </div>
     </div>
 @if (_status == "Loading")
 {
-    <div class="d-flex justify-content-center" style="width: 10vh; height: 10vh;">
-        <div class="spinner-border" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
+    <div class="flex justify-center items-center h-64">
+        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
     </div>
 }
     else
     {
-        <div class="row mt-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach (var m in _results)
             {
-                <div class="col-12 col-md-6 col-lg-4 mb-3">
-                    <div class="card h-100 shadow-sm">
-                        @if (!string.IsNullOrWhiteSpace(m.PosterUrl))
-                        {
-                            <img class="card-img-top" src="@m.PosterUrl" alt="@m.Name"/>
-                        }
-                        <div class="card-body">
-                            <h5 class="card-title d-flex justify-content-between align-items-center text-white">
-                                <span>@m.Name</span>
-                                @if (!string.IsNullOrWhiteSpace(m.Year))
-                                {
-                                    <span class="badge bg-secondary">@m.Year</span>
-                                }
-                            </h5>
-                            <div class="d-flex gap-2">
-                                <a class="btn btn-primary" href="/tv/@m.TmdbId">Details</a>
-                            </div>
+                <div class="bg-gray-800 border border-gray-700 rounded-lg shadow-sm overflow-hidden flex flex-col h-full">
+                    @if (!string.IsNullOrWhiteSpace(m.PosterUrl))
+                    {
+                        <img class="w-full h-96 object-cover" src="@m.PosterUrl" alt="@m.Name"/>
+                    }
+                    <div class="p-4 flex flex-col flex-grow">
+                        <h5 class="text-lg font-semibold text-white mb-2 flex justify-between items-start gap-2">
+                            <span class="line-clamp-2">@m.Name</span>
+                            @if (!string.IsNullOrWhiteSpace(m.Year))
+                            {
+                                <span class="px-2 py-0.5 text-xs font-semibold bg-gray-700 text-gray-300 rounded shrink-0">@m.Year</span>
+                            }
+                        </h5>
+                        <div class="mt-auto pt-4 flex gap-2">
+                            <a class="block w-full text-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors font-medium" href="/tv/@m.TmdbId">Details</a>
                         </div>
                     </div>
                 </div>

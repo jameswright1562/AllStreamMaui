@@ -10,31 +10,31 @@
 
 <PageTitle>@(_pageTitle ?? "Player")</PageTitle>
 
-<div class="mb-3">
+<div class="mb-4">
     @if (!string.IsNullOrWhiteSpace(_title))
     {
-        <h3>@_title</h3>
+        <h3 class="text-2xl font-bold">@_title</h3>
     }
     @if (!string.IsNullOrWhiteSpace(_subTitle))
     {
-        <h5 class="text-secondary">@_subTitle</h5>
+        <h5 class="text-gray-400 text-lg">@_subTitle</h5>
     }
 </div>
 
 @if(!string.IsNullOrWhiteSpace(_embed) || !string.IsNullOrWhiteSpace(_srcdoc))
 {
-<div class="ratio ratio-16x9 w-80">
-        <iframe @key="@_embed" src="@_embed" name="player" allow="autoplay; encrypted-media" allowfullscreen="true" fullscreen></iframe>
+<div class="aspect-video w-full">
+        <iframe class="w-full h-full rounded-lg shadow-lg" @key="@_embed" src="@_embed" name="player" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>
 </div>
 }
-<div class="mt-2">
-    <button class="btn btn-secondary" @onclick="GoBack">Back</button>
+<div class="mt-4 flex flex-wrap gap-2 items-center">
+    <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-md transition-colors" @onclick="GoBack">Back</button>
     @if (!string.IsNullOrWhiteSpace(_nextEpisodeUrl))
     {
-        <a href="@_nextEpisodeUrl" class="btn btn-primary ms-2">Next Episode</a>
+        <a href="@_nextEpisodeUrl" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors">Next Episode</a>
     }
-    <div class="text-danger">@_error</div>
-    <div>@_status</div>
+    <div class="text-red-500">@_error</div>
+    <div class="text-gray-400">@_status</div>
 </div>
 
 @code {
