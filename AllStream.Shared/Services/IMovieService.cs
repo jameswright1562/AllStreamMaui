@@ -15,6 +15,7 @@ public interface IMovieService
         CancellationToken ct = default
     );
     Task<TvDetails?> GetTvDetailsAsync(string tmdbId, CancellationToken ct = default);
+    Task<Movie?> GetMovieDetailsAsync(string tmdbId, CancellationToken ct = default);
     Task<IReadOnlyList<TvEpisode>> GetTvEpisodesAsync(
         string tmdbId,
         int seasonNumber,

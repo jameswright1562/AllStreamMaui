@@ -41,6 +41,7 @@ public static class ServiceBuilder
             );
         });
         services.AddSingleton(settings);
+        services.AddScoped<ILocalStorageService, LocalStorageService>();
         return services;
     }
 }

@@ -2,6 +2,7 @@
 @using AllStream.Shared.Services
 @using AllStream.Shared.Models.CDN
 @inject CDNLiveService LiveSport
+@inject ILocalStorageService LocalStorage
 
 <PageTitle>Live Sports</PageTitle>
 
@@ -59,7 +60,7 @@
         {
             <section class="ls-sport">
                 <h2 class="ls-sport-title">@sportGroup.Key</h2>
-                @if(!sportGroup.Value.Any())
+                @if (!ApplyFilters(sportGroup.Value).GroupBy(m => m.Country).OrderBy(g => g.Key).Any())
                 {
                     <div class="ls-no-matches">No matches available</div>
                 }
@@ -112,16 +113,44 @@ else
 
 
 @code {
-
-
-
     SportResponse? SelectedEvent;
-
     IDictionary<Sport, IEnumerable<SportResponse>> Sports = new Dictionary<Sport, IEnumerable<SportResponse>>();
     string _error = string.Empty;
 
-    string SortMode { get; set; } = "LiveFirst";
-    string? FilterSport { get; set; } = string.Empty;
+    private string _sortMode = "LiveFirst";
+    public string SortMode
+    {
+        get => _sortMode;
+        set { if (_sortMode != value) { _sortMode = value; _ = SaveState(); } }
+    }
+
+    private string? _filterSport = string.Empty;
+    public string? FilterSport
+    {
+        get => _filterSport;
+        set { if (_filterSport != value) { _filterSport = value; _ = SaveState(); } }
+    }
+
+    private string? _filterCountry = string.Empty;
+    public string? FilterCountry
+    {
+        get => _filterCountry;
+        set { if (_filterCountry != value) { _filterCountry = value; _ = SaveState(); } }
+    }
+
+    private string? _filterTournament = string.Empty;
+    public string? FilterTournament
+    {
+        get => _filterTournament;
+        set { if (_filterTournament != value) { _filterTournament = value; _ = SaveState(); } }
+    }
+
+    private string _statusFilter = "All";
+    public string StatusFilter
+    {
+        get => _statusFilter;
+        set { if (_statusFilter != value) { _statusFilter = value; _ = SaveState(); } }
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -134,6 +163,36 @@ else
         {
             _error = ex.Message;
         }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var saved = await LocalStorage.GetItemAsync<SavedFilters>("cdn_filters");
+            if (saved != null)
+            {
+                _sortMode = saved.SortMode ?? "LiveFirst";
+                _filterSport = saved.FilterSport ?? string.Empty;
+                _filterCountry = saved.FilterCountry ?? string.Empty;
+                _filterTournament = saved.FilterTournament ?? string.Empty;
+                _statusFilter = saved.StatusFilter ?? "All";
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task SaveState()
+    {
+        var state = new SavedFilters
+        {
+            SortMode = SortMode,
+            FilterSport = FilterSport,
+            FilterCountry = FilterCountry,
+            FilterTournament = FilterTournament,
+            StatusFilter = StatusFilter
+        };
+        await LocalStorage.SetItemAsync("cdn_filters", state);
     }
 
     IEnumerable<SportResponse> ApplySort(IEnumerable<SportResponse> matches)
@@ -186,10 +245,6 @@ else
         .Where(m => string.IsNullOrWhiteSpace(FilterCountry) || m.Country == FilterCountry)
         .Select(m => m.Tournament).Distinct().OrderBy(x => x);
 
-    string? FilterCountry { get; set; } = string.Empty;
-    string? FilterTournament { get; set; } = string.Empty;
-    string StatusFilter { get; set; } = "All";
-
     void ResetFilters()
     {
         FilterSport = string.Empty;
@@ -201,6 +256,15 @@ else
     void BackToList()
     {
         SelectedEvent = null;
+    }
+
+    public class SavedFilters
+    {
+        public string SortMode { get; set; }
+        public string? FilterSport { get; set; }
+        public string? FilterCountry { get; set; }
+        public string? FilterTournament { get; set; }
+        public string StatusFilter { get; set; }
     }
 }
 
@@ -302,17 +366,38 @@ else
     display: flex;
     align-items: center;
     gap: .5rem;
+    flex: 1;
+    min-width: 0;
+    justify-content: center; /* Center content when not overflowing, or remove if left alignment is preferred */
+    }
+
+    .ls-team:first-child {
+        justify-content: flex-end;
+        text-align: right;
+    }
+    
+    .ls-team:last-child {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .ls-team span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .ls-team img {
     width: 36px;
     height: 36px;
     object-fit: contain;
+    flex-shrink: 0;
     }
 
     .ls-vs {
     font-weight: 700;
     opacity: .6;
+    margin: 0 1rem;
     }
 
     .ls-meta {

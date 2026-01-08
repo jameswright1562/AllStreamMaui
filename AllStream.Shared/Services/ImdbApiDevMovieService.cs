@@ -16,6 +16,39 @@ public class ImdbApiDevMovieService : IMovieService
         _http = http;
     }
 
+    public async Task<Movie?> GetMovieDetailsAsync(string tmdbId, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(tmdbId))
+            return null;
+        try
+        {
+            var url = $"movie/{tmdbId}";
+            var payload = await _http.GetFromJsonAsync<TmdbMovieDetailsResponse>(url, ct);
+            if (payload == null)
+                return null;
+            var poster = string.IsNullOrWhiteSpace(payload.PosterPath)
+                ? string.Empty
+                : ($"https://image.tmdb.org/t/p/w500{payload.PosterPath}");
+            var releaseDate = payload.ReleaseDate ?? string.Empty;
+            var year =
+                (!string.IsNullOrEmpty(releaseDate) && releaseDate.Length >= 4)
+                    ? releaseDate.Substring(0, 4)
+                    : string.Empty;
+            return new Movie
+            {
+                TmdbId = payload.Id.ToString(),
+                ImdbId = payload.ImdbId ?? string.Empty,
+                Title = payload.Title ?? string.Empty,
+                Year = year,
+                PosterUrl = poster,
+            };
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task<IReadOnlyList<Movie>> GetTopRatedAsync(
         int page = 1,
         CancellationToken ct = default
@@ -729,6 +762,27 @@ public class ImdbApiDevMovieService : IMovieService
 
         [JsonPropertyName("seasons")]
         public List<TmdbSeasonSummary>? Seasons { get; set; }
+    }
+
+    private class TmdbMovieDetailsResponse
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("overview")]
+        public string? Overview { get; set; }
+
+        [JsonPropertyName("poster_path")]
+        public string? PosterPath { get; set; }
+
+        [JsonPropertyName("release_date")]
+        public string? ReleaseDate { get; set; }
+
+        [JsonPropertyName("imdb_id")]
+        public string? ImdbId { get; set; }
     }
 
     private class TmdbSeasonSummary
