@@ -16,6 +16,10 @@ using AllStream.Platforms.Windows.WebView;
 using MoviesApp.Services;
 #endif
 
+#if IOS
+using WebKit;
+#endif
+
 namespace AllStream;
 
 public static class MauiProgram
@@ -75,17 +79,23 @@ public static class MauiProgram
 #endif
 #endif
 
+#if IOS
+                        var wkWebView = handler.PlatformView;
+                        wkWebView.Configuration.AllowsInlineMediaPlayback = true;
+                        wkWebView.Configuration.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
+#endif
+
 #if WINDOWS
                         //Old Config
                         var wv2 = handler.PlatformView; // WebView2
                         wv2.CoreWebView2Initialized += (f, e) =>
                         {
-                            AdBlock.Configure(f.CoreWebView2);
+                            //AdBlock.Configure(f.CoreWebView2);
 #if DEBUG
                             f.CoreWebView2.OpenDevToolsWindow();
 #endif
                         };
-                        //WebView2AdBlock.Attach(handler.PlatformView, lazyEngine);
+                       WebView2AdBlock.Attach(handler.PlatformView, lazyEngine);
 #endif
                     });
             });

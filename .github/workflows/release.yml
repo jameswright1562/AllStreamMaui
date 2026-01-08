@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-android:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install MAUI Workload
+        run: dotnet workload install android
+
+      - name: Publish Android APK
+        # Builds a release APK. 
+        # Note: For a signed APK suitable for the Play Store, you would add signing parameters here.
+        # This builds a signed APK with the default debug keystore if no other keystore is provided, which works for side-loading.
+        run: dotnet publish AllStream/AllStream.csproj -c Release -f net10.0-android /p:AndroidPackageFormats=apk
+
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: AllStream/bin/Release/net10.0-android/publish/*.apk
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install MAUI Workload
+        run: dotnet workload install windows
+
+      - name: Publish Windows App
+        # Publishes as an unpackaged app (folder of files) since <WindowsPackageType>None</WindowsPackageType> is set
+        run: dotnet publish AllStream/AllStream.csproj -c Release -f net10.0-windows10.0.19041.0
+
+      - name: Zip Windows Build
+        run: Compress-Archive -Path AllStream/bin/Release/net10.0-windows10.0.19041.0/publish/* -DestinationPath allstream-windows.zip
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-app
+          path: allstream-windows.zip
+
+  create-release:
+    needs: [build-android, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Android Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk
+          path: release-assets/android
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-app
+          path: release-assets/windows
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release-assets/android/*.apk
+            release-assets/windows/*.zip
+          generate_release_notes: true

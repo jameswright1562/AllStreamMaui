@@ -27,6 +27,9 @@ internal static class WebView2AdBlock
 
                 if (engine.ShouldBlock(e.Request.Uri))
                 {
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"{e.Request.Uri} blocked");
+#endif
                     e.Response = core.Environment.CreateWebResourceResponse(
                         new InMemoryRandomAccessStream(),
                         200,
@@ -34,7 +37,21 @@ internal static class WebView2AdBlock
                         "Content-Type: text/plain");
                 }
             };
+            core.NewWindowRequested += (_, e) =>
+            {
+                e.Handled = true;
+            };
+            core.NavigationStarting += (s, e) =>
+            {
+                var engine = lazyEngine.Value.ConfigureAwait(false).GetAwaiter().GetResult();
+                var uri = e.Uri;
+                if (engine.ShouldBlock(uri))
+                {
+                    e.Cancel = true;
+                }
+            };
         };
+
     }
 }
 #endif
