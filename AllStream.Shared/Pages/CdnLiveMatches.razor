@@ -9,18 +9,20 @@
 @if (SelectedEvent == null)
 {
     <div class="container mx-auto px-4 py-8 max-w-[1400px]">
+        <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <h1 class="text-3xl font-bold">Live Sports</h1>
 
             <div class="flex flex-wrap gap-3">
-                <select @bind="FilterSport" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select @bind="FilterSport" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white">
                     <option value="">All sports</option>
                     @foreach (var s in Sports.Keys.OrderBy(x => x.ToString()))
                     {
                         <option value="@s.ToString()">@s</option>
                     }
                 </select>
-                <select @bind="FilterCountry" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+                <select @bind="FilterCountry" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white">
                     <option value="">All countries</option>
                     @foreach (var c in Countries)
                     {
@@ -28,7 +30,7 @@
                     }
                 </select>
 
-                <select @bind="FilterTournament" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select @bind="FilterTournament" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white">
                     <option value="">All tournaments</option>
                     @foreach (var t in Tournaments)
                     {
@@ -36,66 +38,162 @@
                     }
                 </select>
 
-                <select @bind="StatusFilter" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select @bind="StatusFilter" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white">
                     <option value="All">All statuses</option>
                     <option value="Live">Live</option>
                     <option value="Upcoming">Upcoming</option>
                     <option value="Finished">Finished</option>
                 </select>
 
-                <select @bind="SortMode" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select @bind="SortMode" class="px-3 py-2 bg-gray-900 border border-gray-700 rounded-md text-white">
                     <option value="LiveFirst">Live first</option>
                     <option value="DateAsc">Date ↑</option>
                     <option value="DateDesc">Date ↓</option>
                 </select>
-                <button class="px-3 py-2 bg-gray-700 hover:bg-gray-600 border border-gray-600 rounded-md text-white transition-colors" @onclick="ResetFilters">Reset</button>
+
+                <button class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-white"
+                        @onclick="ResetFilters">
+                    Reset
+                </button>
             </div>
         </header>
 
         @if (!string.IsNullOrWhiteSpace(_error))
         {
-            <div class="bg-red-900/20 border border-red-500/50 p-3 rounded-lg mb-4 text-red-200">@_error</div>
+            <div class="bg-red-900/20 border border-red-500/50 p-3 rounded-lg mb-4 text-red-200">
+                @_error
+            </div>
         }
+
         @foreach (var sportGroup in GetSportGroups())
         {
-            <section class="mb-8 flex flex-col gap-6">
-                <h2 class="text-2xl font-bold mb-3">@sportGroup.Key</h2>
-                @if (!ApplyFilters(sportGroup.Value).GroupBy(m => m.Country).OrderBy(g => g.Key).Any())
-                {
-                    <div class="text-gray-400 italic">No matches available</div>
+            <section class="mb-10">
+                <h2 class="text-2xl font-bold mb-4">@sportGroup.Key</h2>
+                @{
+                    var filteredMatches = ApplyFilters(sportGroup.Value).ToList();
                 }
-                @foreach (var country in ApplyFilters(sportGroup.Value).GroupBy(m => m.Country).OrderBy(g => g.Key))
+                @foreach (var country in filteredMatches.GroupBy(m => m.Country).OrderBy(g => g.Key))
                 {
-                    <h3 class="text-xl font-semibold flex items-center gap-2 mt-4 mb-2">@country.Key                 <img src="@country.First().CountryIMG" class="h-6 w-auto"/>
+                    <h3 class="text-xl font-semibold flex items-center gap-2 mb-2">
+                        @country.Key
+                        <img src="@country.First().CountryIMG" class="h-5 w-auto" />
                     </h3>
+
                     @foreach (var tournament in country.GroupBy(m => m.Tournament).OrderBy(g => g.Key))
                     {
-                        <h4 class="text-lg font-medium text-gray-400 mb-2">@tournament.Key</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <h4 class="text-sm uppercase tracking-wide text-gray-400 mb-3">
+                            @tournament.Key
+                        </h4>
+
+                        <!-- MATCH GRID -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-6">
                             @foreach (var match in ApplySort(tournament))
                             {
-                                <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 flex flex-col gap-3 text-white shadow-sm hover:bg-gray-750 transition-colors @(match.Status == GameStatus.Live ? "border-green-500 ring-1 ring-green-500/30" : "")">
-                                    <div class="flex justify-between items-center h-6">
+                                <!-- MATCH CARD -->
+                                <div class="
+                        relative min-w-0 overflow-hidden
+                        rounded-xl p-4
+                        bg-gradient-to-br from-[#1a2236] to-[#0f172a]
+                        border border-white/10
+                        shadow-lg shadow-black/30
+                        flex flex-col gap-4
+                                            transition-all duration-200
+                    hover:-translate-y-1
+                    hover:shadow-xl
+                        @(match.Status == GameStatus.Live
+                                             ? "ring-1 ring-green-400/40 border-green-400/40"
+                                             : "")">
+
+                                    <!-- LIVE -->
+                                    <div class="h-5">
                                         @if (match.Status == GameStatus.Live)
                                         {
-                                            <span class="bg-green-500 text-black font-bold text-xs px-2 py-1 rounded-full">LIVE</span>
+                                            <span class="flex items-center gap-1 text-xs font-bold text-green-400">
+                                                <span class="relative flex h-2 w-2">
+                                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                                                </span>
+                                                LIVE
+                                            </span>
                                         }
                                     </div>
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-2 flex-1 min-w-0 justify-end text-right">
-                                            <span class="whitespace-nowrap overflow-hidden text-ellipsis">@match.HomeTeam</span>
-                                            <img src="@match.HomeTeamIMG" class="w-9 h-9 object-contain flex-shrink-0" />
+
+                                    <!-- TEAMS -->
+                                    <div class="min-w-0">
+
+                                        <!-- MOBILE -->
+                                        <div class="sm:hidden flex flex-col items-center gap-3 text-center">
+                                            <img src="@match.HomeTeamIMG" class="w-16 h-16 object-contain" />
+                                            <span class="font-semibold break-words">
+                                                @match.HomeTeam
+                                            </span>
+
+                                            <span class="text-xs text-gray-400">VS</span>
+
+                                            <img src="@match.AwayTeamIMG" class="w-16 h-16 object-contain" />
+                                            <span class="font-semibold break-words">
+                                                @match.AwayTeam
+                                            </span>
                                         </div>
-                                        <span class="font-bold opacity-60 mx-4">VS</span>
-                                        <div class="flex items-center gap-2 flex-1 min-w-0 justify-start text-left">
-                                            <img src="@match.AwayTeamIMG" class="w-9 h-9 object-contain flex-shrink-0" />
-                                            <span class="whitespace-nowrap overflow-hidden text-ellipsis">@match.AwayTeam</span>
+
+                                        <!-- DESKTOP -->
+                                        <div class="hidden sm:grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+
+                                            <!-- HOME -->
+                                            <div class="flex items-center justify-end gap-2 min-w-0 text-right">
+                                                <span class="font-medium break-words whitespace-normal">
+                                                    @match.HomeTeam
+                                                </span>
+                                                <img src="@match.HomeTeamIMG"
+                                                     class="w-8 h-8 shrink-0 object-contain" />
+                                            </div>
+
+                                            <!-- VS -->
+                                            <span class="text-xs font-semibold text-gray-400 text-center">
+                                                VS
+                                            </span>
+
+                                            <!-- AWAY -->
+                                            <div class="flex items-center justify-start gap-2 min-w-0 text-left">
+                                                <img src="@match.AwayTeamIMG"
+                                                     class="w-8 h-8 shrink-0 object-contain" />
+                                                <span class="font-medium break-words whitespace-normal">
+                                                    @match.AwayTeam
+                                                </span>
+                                            </div>
+
                                         </div>
                                     </div>
-                                    <div class="text-sm text-gray-400">
+
+                                    <!-- TIME -->
+                                    <div class="text-xs text-gray-400 flex items-center gap-2">
+                                        <i class="fa-regular fa-clock opacity-70"></i>
                                         <span>@match.Start</span>
                                     </div>
-                                    <button disabled="@match.NoChannel" class="mt-auto w-full py-2 rounded-md border-none bg-blue-600 text-white font-semibold cursor-pointer hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" @onclick="@(() => { SelectedEvent = match; })">Watch</button>
+
+                                    <!-- CTA -->
+                                    <button disabled="@match.NoChannel"
+                                            @onclick="@(() => SelectedEvent = match)"
+                                            class="
+                            mt-auto w-full
+                            py-2.5 rounded-lg
+                            font-semibold text-white
+
+                            bg-blue-600
+                            hover:bg-blue-700
+                            active:bg-blue-700
+
+                            shadow
+                            shadow-blue-600/20
+
+                            cursor-pointer
+                            transition-all
+
+                            disabled:opacity-40
+                            disabled:cursor-not-allowed
+                        ">
+                                        ▶ Watch
+                                    </button>
                                 </div>
                             }
                         </div>
@@ -110,54 +208,28 @@ else
     <CDNPlayer Match="SelectedEvent" OnBack="BackToList" />
 }
 
-
-
 @code {
     SportResponse? SelectedEvent;
     IDictionary<Sport, IEnumerable<SportResponse>> Sports = new Dictionary<Sport, IEnumerable<SportResponse>>();
     string _error = string.Empty;
 
     private string _sortMode = "LiveFirst";
-    public string SortMode
-    {
-        get => _sortMode;
-        set { if (_sortMode != value) { _sortMode = value; _ = SaveState(); } }
-    }
-
     private string? _filterSport = string.Empty;
-    public string? FilterSport
-    {
-        get => _filterSport;
-        set { if (_filterSport != value) { _filterSport = value; _ = SaveState(); } }
-    }
-
     private string? _filterCountry = string.Empty;
-    public string? FilterCountry
-    {
-        get => _filterCountry;
-        set { if (_filterCountry != value) { _filterCountry = value; _ = SaveState(); } }
-    }
-
     private string? _filterTournament = string.Empty;
-    public string? FilterTournament
-    {
-        get => _filterTournament;
-        set { if (_filterTournament != value) { _filterTournament = value; _ = SaveState(); } }
-    }
-
     private string _statusFilter = "All";
-    public string StatusFilter
-    {
-        get => _statusFilter;
-        set { if (_statusFilter != value) { _statusFilter = value; _ = SaveState(); } }
-    }
+
+    public string SortMode { get => _sortMode; set { _sortMode = value; _ = SaveState(); } }
+    public string? FilterSport { get => _filterSport; set { _filterSport = value; _ = SaveState(); } }
+    public string? FilterCountry { get => _filterCountry; set { _filterCountry = value; _ = SaveState(); } }
+    public string? FilterTournament { get => _filterTournament; set { _filterTournament = value; _ = SaveState(); } }
+    public string StatusFilter { get => _statusFilter; set { _statusFilter = value; _ = SaveState(); } }
 
     protected override async Task OnParametersSetAsync()
     {
         try
         {
-            var ct = CancellationToken.None;
-            Sports = await LiveSport.GetEventsAsync(ct);
+            Sports = await LiveSport.GetEventsAsync(CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -167,96 +239,79 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (!firstRender) return;
+
+        var saved = await LocalStorage.GetItemAsync<SavedFilters>("cdn_filters");
+        if (saved != null)
         {
-            var saved = await LocalStorage.GetItemAsync<SavedFilters>("cdn_filters");
-            if (saved != null)
-            {
-                _sortMode = saved.SortMode ?? "LiveFirst";
-                _filterSport = saved.FilterSport ?? string.Empty;
-                _filterCountry = saved.FilterCountry ?? string.Empty;
-                _filterTournament = saved.FilterTournament ?? string.Empty;
-                _statusFilter = saved.StatusFilter ?? "All";
-                StateHasChanged();
-            }
+            _sortMode = saved.SortMode ?? "LiveFirst";
+            _filterSport = saved.FilterSport ?? string.Empty;
+            _filterCountry = saved.FilterCountry ?? string.Empty;
+            _filterTournament = saved.FilterTournament ?? string.Empty;
+            _statusFilter = saved.StatusFilter ?? "All";
+            StateHasChanged();
         }
     }
 
-    private async Task SaveState()
+    async Task SaveState()
     {
-        var state = new SavedFilters
+        await LocalStorage.SetItemAsync("cdn_filters", new SavedFilters
         {
             SortMode = SortMode,
             FilterSport = FilterSport,
             FilterCountry = FilterCountry,
             FilterTournament = FilterTournament,
             StatusFilter = StatusFilter
-        };
-        await LocalStorage.SetItemAsync("cdn_filters", state);
+        });
     }
 
-    IEnumerable<SportResponse> ApplySort(IEnumerable<SportResponse> matches)
-    {
-        return SortMode switch
+    IEnumerable<SportResponse> ApplySort(IEnumerable<SportResponse> matches) =>
+        SortMode switch
         {
-            "LiveFirst" => matches
-                .OrderByDescending(m => m.Status == GameStatus.Live)
-                .ThenByDescending(m => m.Channels.Sum(x=>x.Viewers))
-                .ThenByDescending(m=>DateTime.Parse(m.Start)),
-
+            "LiveFirst" => matches.OrderByDescending(m => m.Status == GameStatus.Live)
+                                  .ThenByDescending(m => DateTime.Parse(m.Start)),
             "DateAsc" => matches.OrderBy(m => DateTime.Parse(m.Start)),
-
             "DateDesc" => matches.OrderByDescending(m => DateTime.Parse(m.Start)),
-
             _ => matches
         };
-    }
 
     IEnumerable<SportResponse> ApplyFilters(IEnumerable<SportResponse> matches)
     {
         var q = matches;
         if (!string.IsNullOrWhiteSpace(FilterCountry)) q = q.Where(m => m.Country == FilterCountry);
         if (!string.IsNullOrWhiteSpace(FilterTournament)) q = q.Where(m => m.Tournament == FilterTournament);
-        q = StatusFilter switch
+        return StatusFilter switch
         {
             "Live" => q.Where(m => m.Status == GameStatus.Live),
             "Upcoming" => q.Where(m => m.Status == GameStatus.Upcoming),
             "Finished" => q.Where(m => m.Status == GameStatus.Finished),
             _ => q
         };
-        return q;
     }
 
     IEnumerable<KeyValuePair<Sport, IEnumerable<SportResponse>>> GetSportGroups()
     {
-        var all = Sports ?? new Dictionary<Sport, IEnumerable<SportResponse>>();
-        if (string.IsNullOrWhiteSpace(FilterSport)) return all.OrderBy(kvp => kvp.Key.ToString());
+        if (string.IsNullOrWhiteSpace(FilterSport)) return Sports;
         return Enum.TryParse<Sport>(FilterSport, out var s)
-            ? all.Where(kvp => kvp.Key == s)
+            ? Sports.Where(x => x.Key == s)
             : Enumerable.Empty<KeyValuePair<Sport, IEnumerable<SportResponse>>>();
     }
 
-    IEnumerable<SportResponse> CurrentMatches => string.IsNullOrWhiteSpace(FilterSport)
-        ? Sports.Values.SelectMany(x => x)
-        : (Enum.TryParse<Sport>(FilterSport, out var s) && Sports.TryGetValue(s, out var ms) ? ms : Enumerable.Empty<SportResponse>());
+    IEnumerable<SportResponse> CurrentMatches =>
+        string.IsNullOrWhiteSpace(FilterSport)
+            ? Sports.Values.SelectMany(x => x)
+            : (Enum.TryParse<Sport>(FilterSport, out var s) && Sports.TryGetValue(s, out var ms) ? ms : Enumerable.Empty<SportResponse>());
 
-    IEnumerable<string> Countries => CurrentMatches.Select(m => m.Country).Distinct().OrderBy(x => x);
-    IEnumerable<string> Tournaments => CurrentMatches
-        .Where(m => string.IsNullOrWhiteSpace(FilterCountry) || m.Country == FilterCountry)
-        .Select(m => m.Tournament).Distinct().OrderBy(x => x);
+    IEnumerable<string> Countries => CurrentMatches.Select(m => m.Country).Distinct();
+    IEnumerable<string> Tournaments => CurrentMatches.Select(m => m.Tournament).Distinct();
 
     void ResetFilters()
     {
-        FilterSport = string.Empty;
-        FilterCountry = string.Empty;
-        FilterTournament = string.Empty;
+        FilterSport = FilterCountry = FilterTournament = string.Empty;
         StatusFilter = "All";
     }
 
-    void BackToList()
-    {
-        SelectedEvent = null;
-    }
+    void BackToList() => SelectedEvent = null;
 
     public class SavedFilters
     {
