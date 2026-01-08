@@ -14,22 +14,19 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 9.0.x
 
       - name: Install MAUI Workloads
         run: dotnet workload install maui-android maui-ios maui-windows
 
-      - name: Publish Android APK
-        # Builds a release APK. 
-        # Note: For a signed APK suitable for the Play Store, you would add signing parameters here.
-        # This builds a signed APK with the default debug keystore if no other keystore is provided, which works for side-loading.
-        run: dotnet publish AllStream/AllStream.csproj -c Release -f net10.0-android /p:AndroidPackageFormats=apk
+      - name: Build Android APK
+        run: dotnet publish AllStream/AllStream.csproj -c Release -f net9.0-android /p:AndroidPackageFormat=apk
 
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: AllStream/bin/Release/net10.0-android/publish/*.apk
+          path: AllStream/bin/Release/net9.0-android/publish/*.apk
 
   build-windows:
     runs-on: windows-latest
@@ -39,17 +36,16 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 9.0.x
 
       - name: Install MAUI Workloads
         run: dotnet workload install maui-android maui-ios maui-windows
 
       - name: Publish Windows App
-        # Publishes as an unpackaged app (folder of files) since <WindowsPackageType>None</WindowsPackageType> is set
-        run: dotnet publish AllStream/AllStream.csproj -c Release -f net10.0-windows10.0.19041.0
+        run: dotnet publish AllStream/AllStream.csproj -c Release -f net9.0-windows10.0.19041.0 /p:WindowsPackageType=None /p:RuntimeIdentifier=win10-x64 /p:SelfContained=true
 
-      - name: Zip Windows Build
-        run: Compress-Archive -Path AllStream/bin/Release/net10.0-windows10.0.19041.0/publish/* -DestinationPath allstream-windows.zip
+      - name: Compress Windows Build
+        run: Compress-Archive -Path AllStream/bin/Release/net9.0-windows10.0.19041.0/win10-x64/publish/* -DestinationPath allstream-windows.zip
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
@@ -65,19 +61,19 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 9.0.x
 
       - name: Install MAUI Workloads
         run: dotnet workload install maui-android maui-ios maui-windows
 
       - name: Publish iOS App
-        run: dotnet publish AllStream/AllStream.csproj -c Release -f net10.0-ios /p:ArchiveOnBuild=true /p:EnableCodeSigning=false
+        run: dotnet publish AllStream/AllStream.csproj -c Release -f net9.0-ios /p:ArchiveOnBuild=true /p:EnableCodeSigning=false
 
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-app
-          path: AllStream/bin/Release/net10.0-ios/ios-arm64/publish/**
+          path: AllStream/bin/Release/net9.0-ios/ios-arm64/publish/**
 
   create-release:
     needs: [build-android, build-windows, build-ios]

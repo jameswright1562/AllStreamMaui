@@ -116,7 +116,7 @@
                 {
                     if (key.StartsWith("tt"))
                     {
-                        _embed = $"https://vidsrc.to/embed/movie/{key.TrimStart("tt").ToString()}";
+                        _embed = $"https://vidsrc.to/embed/movie/{key.Replace("tt", "").ToString()}";
                         // Can't easily get details by IMDB ID with current API, but if we had GetMovieDetailsAsync that accepted IMDB ID or we just used the ID passed...
                         // Actually our new GetMovieDetailsAsync takes TMDB ID. 
                         // If key is tt..., it's IMDB ID. 
