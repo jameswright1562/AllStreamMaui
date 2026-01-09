@@ -15,9 +15,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+          dotnet-quality: preview
 
       - name: Install MAUI Workloads
-        run: dotnet workload install maui-android maui-ios maui-windows
+        run: dotnet workload install maui-android maui-windows
 
       - name: Publish Android APK
         # Builds a release APK. 
@@ -40,22 +41,26 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+          dotnet-quality: preview
 
       - name: Install MAUI Workloads
-        run: dotnet workload install maui-android maui-ios maui-windows
+        run: dotnet workload install maui-android maui-windows
 
-      - name: Publish Windows App
-        # Publishes as an unpackaged app (folder of files) since <WindowsPackageType>None</WindowsPackageType> is set
-        run: dotnet publish AllStream/AllStream.csproj -c Release -f net10.0-windows10.0.19041.0
+      - name: Publish Windows MSIX
+        run: |
+          dotnet publish AllStream/AllStream.csproj `
+            -c Release `
+            -f net10.0-windows10.0.19041.0 `
+            /p:RuntimeIdentifier=win-x64 `
+            /p:SelfContained=true `
+            /p:AppxPackageSigningEnabled=false
 
-      - name: Zip Windows Build
-        run: Compress-Archive -Path AllStream/bin/Release/net10.0-windows10.0.19041.0/publish/* -DestinationPath allstream-windows.zip
-
-      - name: Upload Windows Artifact
+      - name: Upload Windows MSIX
         uses: actions/upload-artifact@v4
         with:
-          name: windows-app
-          path: allstream-windows.zip
+          name: windows-msix
+          path: |
+            AllStream/bin/Release/net10.0-windows10.0.19041.0/win-x64/AppPackages/**/*.msix
 
   # build-ios:
   #   runs-on: macos-latest
@@ -94,7 +99,7 @@ jobs:
       - name: Download Windows Artifact
         uses: actions/download-artifact@v4
         with:
-          name: windows-app
+          name: windows-msix
           path: release-assets/windows
 
       # - name: Download iOS Artifact
@@ -108,5 +113,5 @@ jobs:
         with:
           files: |
             release-assets/android/*.apk
-            release-assets/windows/*.zip
+            release-assets/windows/**/*.msix
           generate_release_notes: true
