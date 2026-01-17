@@ -84,7 +84,7 @@ namespace AllStream.Android.UITests
 
             var opts = new AppiumOptions();
             opts.PlatformName = "Android";
-            opts.AddAdditionalAppiumOption("automationName", "UiAutomator2");
+            opts.AutomationName = "UiAutomator2";
             opts.AddAdditionalAppiumOption("app", apkPath);
             opts.AddAdditionalAppiumOption("newCommandTimeout", 180);
             opts.AddAdditionalAppiumOption("uiautomator2ServerInstallTimeout", 120000);
