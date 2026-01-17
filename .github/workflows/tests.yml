@@ -19,7 +19,7 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet workload install maui-android maui-ios maui-windows
 
       - name: Unit Tests (Shared)
         run: dotnet test AllStream.Tests/AllStream.Tests.csproj --configuration Release --verbosity normal
@@ -52,7 +52,7 @@ jobs:
 
       - name: Build MAUI Android APK
         run: |
-          dotnet workload install android
+          dotnet workload install maui-android maui-ios maui-windows
           dotnet build AllStream/AllStream.csproj -c Release -f net10.0-android /p:AndroidPackageFormat=apk
           APK=$(find AllStream -type f -name "*.apk" | head -n 1)
           echo "Found APK: $APK"
