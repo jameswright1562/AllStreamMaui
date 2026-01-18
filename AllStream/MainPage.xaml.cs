@@ -19,12 +19,13 @@ public partial class MainPage : ContentPage
 #endif
     }
 
-#if ANDROID
     void OnLoaded(object? sender, EventArgs e)
     {
         // WebView configuration is now handled in MauiProgram.cs via Handler Mapping
         TryCheckUpdates();
     }
+
+#if ANDROID
 
     static double GetStatusBarHeightDp()
     {
